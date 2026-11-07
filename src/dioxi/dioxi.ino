@@ -1,6 +1,9 @@
 #include <WiFi.h>
 #include <secrets.h>
 
+#include <WiFiClientSecure.h>   // for https://
+#include <HTTPClient.h>
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
@@ -22,6 +25,29 @@ void connectWiFi() {
 
   Serial.print("Connected to Wifi ");
   Serial.println(ssid);
+
+  firebaseLogin();
+}
+
+
+void firebaseLogin() {
+  WiFiClientSecure client;
+  client.setInsecure();
+
+  String url = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=" + String(apiKey);
+
+  HTTPClient http;
+  http.begin(client, url);
+  http.addHeader("Content-Type", "application/json");
+
+  String body = String("{\"email\":\"") + eMail + "\",\"password\":\"" + pwd + "\",\"returnSecureToken\": true }";
+
+  int code = http.POST(body);
+  String response = http.getString();
+  http.end();
+  Serial.println(code);
+  Serial.println(response);
+
 }
 
 void printSignalQuality(int rssi) {
